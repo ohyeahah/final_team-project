@@ -89,3 +89,56 @@ PERSON_COLORS = {
     "청소년": "#90EE90", # 초록 (LightGreen)
     "어린이": "#FFD700"   # 노랑 (Gold)
 }
+
+class SeatSelectionWindow(tk.Toplevel):
+    def __init__(self, parent, people_counts, booked_seats):
+        super().__init__(parent)
+        self.title("좌석 선택")
+        self.geometry("550x400")
+        self.resizable(False, False)
+        self.transient(parent)
+        self.config(bg=BG_COLOR)
+        self.grab_set()
+        
+        self.parent = parent
+        self.people_counts = people_counts
+        self.selection_queue = ([ "성인" ] * people_counts.get("adult", 0) +
+                                [ "청소년" ] * people_counts.get("youth", 0) +
+                                [ "어린이" ] * people_counts.get("child", 0))
+        self.total_seats_to_select = len(self.selection_queue)
+        self.selected_seats = {} 
+        self.booked_seats = booked_seats
+        self.seat_buttons = {}
+        self.result = None
+
+        default_font = font.Font(family=FONT_NAME, size=10)
+        
+        screen_label = tk.Label(self, text="SCREEN", font=(FONT_NAME, 14, "bold"), bg="gray", fg="white")
+        screen_label.pack(pady=20, fill="x", padx=20)
+
+        seats_frame = tk.Frame(self, bg=BG_COLOR)
+        seats_frame.pack(pady=10)
+
+        for r in range(5):
+            row_char = chr(ord('A') + r)
+            for c in range(10):
+                seat_name = f"{row_char}{c+1}"
+                btn = tk.Button(seats_frame, text=seat_name, width=4, font=default_font, bg="lightgrey", relief="flat")
+                btn.config(command=lambda b=btn, sn=seat_name: self.seat_click(b, sn))
+                btn.grid(row=r, column=c, padx=2, pady=2)
+                if seat_name in self.booked_seats:
+                    btn.config(state="disabled", bg="red")
+                self.seat_buttons[seat_name] = btn
+
+        bottom_frame = tk.Frame(self, bg=BG_COLOR)
+        bottom_frame.pack(pady=10)
+
+        self.info_label = tk.Label(bottom_frame, text="", font=default_font, bg=BG_COLOR)
+        self.info_label.pack(pady=(0, 10))
+
+        confirm_btn = tk.Button(self, text="선택 완료", font=default_font, command=self.confirm_selection, bg=POINT_COLOR, fg="white", relief="flat", padx=10, pady=5)
+        confirm_btn.pack(pady=5)
+        confirm_btn.bind("<Enter>", on_enter)
+        confirm_btn.bind("<Leave>", on_leave)
+
+        self.update_info_label()
