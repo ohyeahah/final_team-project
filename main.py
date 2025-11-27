@@ -89,3 +89,130 @@ PERSON_COLORS = {
     "청소년": "#90EE90", # 초록 (LightGreen)
     "어린이": "#FFD700"   # 노랑 (Gold)
 }
+
+class SeatSelectionWindow(tk.Toplevel):
+    def __init__(self, parent, people_counts, booked_seats):
+        super().__init__(parent)
+        self.title("좌석 선택")
+        self.geometry("550x400")
+        self.resizable(False, False)
+        self.transient(parent)
+        self.config(bg=BG_COLOR)
+        self.grab_set()
+        
+        self.parent = parent
+        self.people_counts = people_counts
+        self.selection_queue = ([ "성인" ] * people_counts.get("adult", 0) +
+                                [ "청소년" ] * people_counts.get("youth", 0) +
+                                [ "어린이" ] * people_counts.get("child", 0))
+        self.total_seats_to_select = len(self.selection_queue)
+        self.selected_seats = {} 
+        self.booked_seats = booked_seats
+        self.seat_buttons = {}
+        self.result = None
+
+        default_font = font.Font(family=FONT_NAME, size=10)
+        
+        screen_label = tk.Label(self, text="SCREEN", font=(FONT_NAME, 14, "bold"), bg="gray", fg="white")
+        screen_label.pack(pady=20, fill="x", padx=20)
+
+        seats_frame = tk.Frame(self, bg=BG_COLOR)
+        seats_frame.pack(pady=10)
+
+        for r in range(5):
+            row_char = chr(ord('A') + r)
+            for c in range(10):
+                seat_name = f"{row_char}{c+1}"
+                btn = tk.Button(seats_frame, text=seat_name, width=4, font=default_font, bg="lightgrey", relief="flat")
+                btn.config(command=lambda b=btn, sn=seat_name: self.seat_click(b, sn))
+                btn.grid(row=r, column=c, padx=2, pady=2)
+                if seat_name in self.booked_seats:
+                    btn.config(state="disabled", bg="red")
+                self.seat_buttons[seat_name] = btn
+
+        bottom_frame = tk.Frame(self, bg=BG_COLOR)
+        bottom_frame.pack(pady=10)
+
+        self.info_label = tk.Label(bottom_frame, text="", font=default_font, bg=BG_COLOR)
+        self.info_label.pack(pady=(0, 10))
+
+        confirm_btn = tk.Button(self, text="선택 완료", font=default_font, command=self.confirm_selection, bg=POINT_COLOR, fg="white", relief="flat", padx=10, pady=5)
+        confirm_btn.pack(pady=5)
+        confirm_btn.bind("<Enter>", on_enter)
+        confirm_btn.bind("<Leave>", on_leave)
+
+        self.update_info_label()
+
+    def seat_click(self, seat_button, seat_name):
+        if seat_name in self.selected_seats:
+            person_type = self.selected_seats.pop(seat_name)
+            self.selection_queue.insert(0, person_type)
+            seat_button.config(bg="lightgrey", relief="flat")
+        else:
+            if self.selection_queue:
+                person_type = self.selection_queue.pop(0)
+                self.selected_seats[seat_name] = person_type
+                color = PERSON_COLORS.get(person_type)
+                seat_button.config(bg=color, relief="flat")
+            else:
+                messagebox.showwarning("선택 초과", f"최대 {self.total_seats_to_select}개의 좌석만 선택할 수 있습니다.", parent=self)
+        
+        self.update_info_label()
+
+    def update_info_label(self):
+        if self.selection_queue:
+            next_person = self.selection_queue[0]
+            color = PERSON_COLORS.get(next_person)
+            self.info_label.config(text=f"'{next_person}' 좌석을 선택해주세요. ({len(self.selected_seats)}/{self.total_seats_to_select})", fg=color)
+        else:
+            self.info_label.config(text=f"모든 좌석을 선택했습니다. ({len(self.selected_seats)}/{self.total_seats_to_select})", fg="black")
+    
+    def confirm_selection(self):
+        if self.selection_queue:
+            messagebox.showwarning("좌석 부족", f"{self.total_seats_to_select}개의 좌석을 모두 선택해주세요.", parent=self)
+            return
+        
+        self.result = sorted(self.selected_seats.keys())
+        self.destroy()
+
+class PaymentWindow(tk.Toplevel):
+    def __init__(self, parent, total_price):
+        super().__init__(parent)
+        self.title("결제")
+        self.geometry("300x200")
+        self.resizable(False, False)
+        self.transient(parent)
+        self.config(bg=BG_COLOR)
+        self.grab_set()
+
+        self.total_price = total_price
+        self.success = False
+
+        default_font = font.Font(family=FONT_NAME, size=11) 
+        tk.Label(self, text=f"총 결제 금액: {total_price:,}원", font=font.Font(family=FONT_NAME, size=13, weight="bold"), bg=BG_COLOR).pack(pady=15)
+        
+        input_frame = tk.Frame(self, bg=BG_COLOR)
+        input_frame.pack(pady=5)
+        tk.Label(input_frame, text="지불할 금액:", font=default_font, bg=BG_COLOR).pack(side="left", padx=5)
+        self.amount_entry = tk.Entry(input_frame, font=default_font, width=12, justify="right")
+        self.amount_entry.pack(side="left")
+
+        pay_btn = tk.Button(self, text="결제하기", font=default_font, command=self.process_payment, bg=POINT_COLOR, fg="white", relief="flat", padx=10, pady=5)
+        pay_btn.pack(pady=15)
+        pay_btn.bind("<Enter>", on_enter)
+        pay_btn.bind("<Leave>", on_leave)
+
+  def process_payment(self):
+        try:
+            paid_amount = int(self.amount_entry.get())
+        except ValueError:
+            messagebox.showerror("입력 오류", "숫자만 입력해주세요.", parent=self)
+            return
+
+        if paid_amount < self.total_price:
+            messagebox.showwarning("금액 부족", "지불할 금액이 부족합니다.", parent=self)
+        else:
+            change = paid_amount - self.total_price
+            messagebox.showinfo("결제 성공", f"결제가 완료되었습니다.\n거스름돈: {change:,}원", parent=self)
+            self.success = True
+            self.destroy()
