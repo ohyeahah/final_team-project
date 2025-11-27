@@ -68,3 +68,24 @@ MOVIES = [
         "reviews": []
     },
 ]
+
+# 티켓 가격
+TICKET_PRICES = {
+    "adult": 14000,
+    "youth": 12000,
+    "child": 8000,
+}
+
+# 버튼 호버 효과를 위한 함수
+def on_enter(e):
+    e.widget['background'] = HOVER_COLOR
+
+def on_leave(e):
+    e.widget['background'] = POINT_COLOR
+
+# 인원 유형별 색상
+PERSON_COLORS = {
+    "성인": "#6495ED",  # 파랑 (Cornflower Blue)
+    "청소년": "#90EE90", # 초록 (LightGreen)
+    "어린이": "#FFD700"   # 노랑 (Gold)
+}
