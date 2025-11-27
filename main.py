@@ -474,5 +474,14 @@ class MovieTicketApp:
             del movie_data["reviews"][selected_review_index]
             self.update_review_display()
 
+    def update_review_display(self):
+        selected_index = self.movie_listbox.curselection()[0] if self.movie_listbox.curselection() else 0
+        movie_data = MOVIES[selected_index]
+        self.review_listbox.delete(0, tk.END)
+        if movie_data["reviews"]:
+            for review in movie_data["reviews"]:
+                self.review_listbox.insert(tk.END, review)
+        else:
+            self.review_listbox.insert(tk.END, "아직 등록된 후기가 없습니다.")
 
 
