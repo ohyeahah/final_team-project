@@ -201,3 +201,18 @@ class PaymentWindow(tk.Toplevel):
         pay_btn.pack(pady=15)
         pay_btn.bind("<Enter>", on_enter)
         pay_btn.bind("<Leave>", on_leave)
+
+  def process_payment(self):
+        try:
+            paid_amount = int(self.amount_entry.get())
+        except ValueError:
+            messagebox.showerror("입력 오류", "숫자만 입력해주세요.", parent=self)
+            return
+
+        if paid_amount < self.total_price:
+            messagebox.showwarning("금액 부족", "지불할 금액이 부족합니다.", parent=self)
+        else:
+            change = paid_amount - self.total_price
+            messagebox.showinfo("결제 성공", f"결제가 완료되었습니다.\n거스름돈: {change:,}원", parent=self)
+            self.success = True
+            self.destroy()
