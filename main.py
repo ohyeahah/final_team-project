@@ -202,7 +202,7 @@ class PaymentWindow(tk.Toplevel):
         pay_btn.bind("<Enter>", on_enter)
         pay_btn.bind("<Leave>", on_leave)
 
-  def process_payment(self):
+    def process_payment(self):
         try:
             paid_amount = int(self.amount_entry.get())
         except ValueError:
@@ -216,3 +216,25 @@ class PaymentWindow(tk.Toplevel):
             messagebox.showinfo("결제 성공", f"결제가 완료되었습니다.\n거스름돈: {change:,}원", parent=self)
             self.success = True
             self.destroy()
+
+class MovieTicketApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("영화 티켓 예매 시스템")
+        self.root.geometry("850x750")
+        self.root.resizable(True, True)
+        self.root.configure(bg=BG_COLOR)
+        self.current_photo = None 
+        self.current_rating = 0
+        self.is_restarting = False
+
+        self.default_font = font.Font(family=FONT_NAME, size=11)
+        self.title_font = font.Font(family=FONT_NAME, size=14, weight="bold")
+
+        self.booked_seats_data = {}
+        self.load_data()
+
+        self.create_widgets()
+        self.show_plot(None)
+
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
