@@ -142,3 +142,19 @@ class SeatSelectionWindow(tk.Toplevel):
         confirm_btn.bind("<Leave>", on_leave)
 
         self.update_info_label()
+
+    def seat_click(self, seat_button, seat_name):
+        if seat_name in self.selected_seats:
+            person_type = self.selected_seats.pop(seat_name)
+            self.selection_queue.insert(0, person_type)
+            seat_button.config(bg="lightgrey", relief="flat")
+        else:
+            if self.selection_queue:
+                person_type = self.selection_queue.pop(0)
+                self.selected_seats[seat_name] = person_type
+                color = PERSON_COLORS.get(person_type)
+                seat_button.config(bg=color, relief="flat")
+            else:
+                messagebox.showwarning("선택 초과", f"최대 {self.total_seats_to_select}개의 좌석만 선택할 수 있습니다.", parent=self)
+        
+        self.update_info_label()
