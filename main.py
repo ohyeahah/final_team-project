@@ -586,3 +586,17 @@ class MovieTicketApp:
 
         if not is_restarting:
             self.root.destroy()
+
+    def restart_app(self):
+        """프로그램을 재시작합니다."""
+        self.on_closing(is_restarting=True)
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+         
+    def reset_all_seats(self):
+        """모든 예매된 좌석 정보를 초기화합니다."""
+        if messagebox.askyesno("초기화 확인", "정말로 모든 영화의 예매된 좌석 정보를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.\n\n초기화 후 프로그램이 재시작됩니다."):
+            seat_file_path = os.path.join(BASE_DIR, "booked_seats.json")
+            if os.path.exists(seat_file_path):
+                os.remove(seat_file_path)
+            self.restart_app()
