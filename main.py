@@ -158,3 +158,11 @@ class SeatSelectionWindow(tk.Toplevel):
                 messagebox.showwarning("선택 초과", f"최대 {self.total_seats_to_select}개의 좌석만 선택할 수 있습니다.", parent=self)
         
         self.update_info_label()
+
+    def update_info_label(self):
+        if self.selection_queue:
+            next_person = self.selection_queue[0]
+            color = PERSON_COLORS.get(next_person)
+            self.info_label.config(text=f"'{next_person}' 좌석을 선택해주세요. ({len(self.selected_seats)}/{self.total_seats_to_select})", fg=color)
+        else:
+            self.info_label.config(text=f"모든 좌석을 선택했습니다. ({len(self.selected_seats)}/{self.total_seats_to_select})", fg="black")
