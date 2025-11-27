@@ -461,6 +461,18 @@ class MovieTicketApp:
         self.rate_movie(0) # 별점 초기화
         self.update_review_display()
 
+    def delete_review(self):
+        try:
+            selected_movie_index = self.movie_listbox.curselection()[0]
+            selected_review_index = self.review_listbox.curselection()[0]
+        except IndexError:
+            messagebox.showwarning("선택 오류", "삭제할 후기를 목록에서 선택해주세요.")
+            return
+
+        if messagebox.askyesno("삭제 확인", "선택한 후기를 정말로 삭제하시겠습니까?"):
+            movie_data = MOVIES[selected_movie_index]
+            del movie_data["reviews"][selected_review_index]
+            self.update_review_display()
 
 
 
