@@ -484,4 +484,82 @@ class MovieTicketApp:
         else:
             self.review_listbox.insert(tk.END, "아직 등록된 후기가 없습니다.")
 
+    def book_ticket(self):
+        try:
+            selected_index = self.movie_listbox.curselection()[0]
+            selected_movie_data = MOVIES[selected_index]
+            selected_movie_display = f"{selected_movie_data['title']} ({selected_movie_data['time']})"
+        except IndexError:
+            messagebox.showwarning("선택 오류", "영화를 선택해주세요.")
+            return
+
+        try:
+            num_adults = int(self.spinboxes["adult"].get())
+            num_youths = int(self.spinboxes["youth"].get())
+            num_children = int(self.spinboxes["child"].get())
+        except ValueError:
+            messagebox.showerror("입력 오류", "인원 수는 숫자로 입력해야 합니다.")
+            return
+
+        people_counts = {
+            "adult": num_adults,
+            "youth": num_youths,
+            "child": num_children
+        }
+        total_people = sum(people_counts.values())
+
+        if total_people == 0:
+            messagebox.showwarning("예매 오류", "예매 인원이 없습니다.\n인원 수를 선택해주세요.")
+            return
+
+        movie_title = selected_movie_data['title']
+        current_booked_seats = self.booked_seats_data.get(movie_title, [])
+        seat_window = SeatSelectionWindow(self.root, people_counts, current_booked_seats)
+        self.root.wait_window(seat_window)
+
+        selected_seats = seat_window.result
+        if not selected_seats:
+            return
+
+        total_price = (num_adults * TICKET_PRICES["adult"]) + \
+                      (num_youths * TICKET_PRICES["youth"]) + \
+                      (num_children * TICKET_PRICES["child"])
+
+        payment_window = PaymentWindow(self.root, total_price)
+        self.root.wait_window(payment_window)
+
+        if not payment_window.success:
+            messagebox.showinfo("예매 취소", "결제가 취소되어 예매가 완료되지 않았습니다.")
+            return
+
+        # 예매 성공 시 좌석 정보 업데이트 및 저장
+        if movie_title not in self.booked_seats_data:
+            self.booked_seats_data[movie_title] = []
+        self.booked_seats_data[movie_title].extend(selected_seats)
+        self.save_data()
+
+        receipt = (
+            f"===== 예매 내역 =====\n\n"
+            f"선택한 영화: {selected_movie_display}\n\n"
+            f"성인: {num_adults}명\n"
+            f"청소년: {num_youths}명\n"
+            f"어린이: {num_children}명\n\n"
+            f"선택 좌석: {', '.join(selected_seats)}\n\n"
+            f"--------------------\n"
+            f"총 결제 금액: {total_price:,}원"
+        )
+
+        # --- [핵심 수정 3] 파일 저장 위치 동적 설정 ---
+        try:
+            # BASE_DIR을 사용하여 항상 파이썬 파일과 같은 위치에 저장
+            file_name = "예매표.txt"
+            file_path = os.path.join(BASE_DIR, file_name)
+
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(receipt)
+            
+            final_message = f"{receipt}\n\n--------------------\n위 내용이 아래 경로에 저장되었습니다:\n{file_path}"
+            messagebox.showinfo("예매 완료", final_message)
+        except Exception as e:
+            messagebox.showerror("파일 저장 오류", f"예매 내역을 파일로 저장하는 중 오류가 발생했습니다.\n{e}")
 
