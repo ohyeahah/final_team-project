@@ -438,5 +438,29 @@ class MovieTicketApp:
             else:
                 btn.config(text='☆')
 
+    def add_review(self):
+        try:
+            selected_index = self.movie_listbox.curselection()[0]
+        except IndexError:
+            messagebox.showwarning("선택 오류", "후기를 추가할 영화를 선택해주세요.")
+            return
+
+        review_text = self.review_entry.get()
+        if not self.current_rating and not review_text:
+            messagebox.showwarning("입력 오류", "별점 또는 후기 내용을 입력해주세요.")
+            return
+
+        movie_data = MOVIES[selected_index]
+        
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+        # 별점과 후기 텍스트를 함께 저장
+        full_review = f"({timestamp}) 별점: {'★'*self.current_rating}{'☆'*(5-self.current_rating)} - {review_text}"
+        movie_data["reviews"].append(full_review)
+
+        self.review_entry.delete(0, tk.END)
+        self.rate_movie(0) # 별점 초기화
+        self.update_review_display()
+
+
 
 
