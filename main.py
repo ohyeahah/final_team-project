@@ -600,3 +600,8 @@ class MovieTicketApp:
             if os.path.exists(seat_file_path):
                 os.remove(seat_file_path)
             self.restart_app()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = MovieTicketApp(root)
+    root.mainloop()
