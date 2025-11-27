@@ -263,4 +263,28 @@ class MovieTicketApp:
                                 break
         except (IOError, json.JSONDecodeError) as e:
             print(f"후기 파일 로드 오류: {e}")
-            
+            self.booked_seats_data = {}
+
+        # 영화 후기 정보 로드
+        try:
+            review_file_path = os.path.join(BASE_DIR, "movie_reviews.json")
+            if os.path.exists(review_file_path):
+                with open(review_file_path, 'r', encoding='utf-8') as f:
+                    loaded_reviews = json.load(f)
+                    for movie, data in loaded_reviews.items():
+                        for m in MOVIES:
+                            if m['title'] == movie:
+                                m['reviews'] = data.get('reviews', [])
+                                break
+        except (IOError, json.JSONDecodeError) as e:
+            print(f"후기 파일 로드 오류: {e}")
+            self.booked_seats_data = {}
+
+    def save_data(self):
+        # 예매된 좌석 정보 저장
+        seat_file_path = os.path.join(BASE_DIR, "booked_seats.json")
+        with open(seat_file_path, 'w', encoding='utf-8') as f:
+            json.dump(self.booked_seats_data, f, ensure_ascii=False, indent=4)
+
+
+
