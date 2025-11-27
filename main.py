@@ -563,3 +563,26 @@ class MovieTicketApp:
         except Exception as e:
             messagebox.showerror("파일 저장 오류", f"예매 내역을 파일로 저장하는 중 오류가 발생했습니다.\n{e}")
 
+    def reset_fields(self):
+        self.movie_listbox.selection_clear(0, tk.END)
+        self.movie_listbox.select_set(0)
+        self.show_plot(None)
+        self.review_entry.delete(0, tk.END)
+
+        for spinbox in self.spinboxes.values():
+            spinbox.delete(0, tk.END)
+            spinbox.insert(0, "0")
+
+    def on_closing(self, is_restarting=False):
+        # 프로그램 종료 시 후기 데이터 저장
+        reviews_to_save = {}
+        for movie in MOVIES:
+            if movie['reviews']:
+                reviews_to_save[movie['title']] = {'reviews': movie['reviews']}
+        
+        review_file_path = os.path.join(BASE_DIR, "movie_reviews.json")
+        with open(review_file_path, 'w', encoding='utf-8') as f:
+            json.dump(reviews_to_save, f, ensure_ascii=False, indent=4)
+
+        if not is_restarting:
+            self.root.destroy()
