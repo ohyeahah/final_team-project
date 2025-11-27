@@ -174,3 +174,30 @@ class SeatSelectionWindow(tk.Toplevel):
         
         self.result = sorted(self.selected_seats.keys())
         self.destroy()
+
+class PaymentWindow(tk.Toplevel):
+    def __init__(self, parent, total_price):
+        super().__init__(parent)
+        self.title("결제")
+        self.geometry("300x200")
+        self.resizable(False, False)
+        self.transient(parent)
+        self.config(bg=BG_COLOR)
+        self.grab_set()
+
+        self.total_price = total_price
+        self.success = False
+
+        default_font = font.Font(family=FONT_NAME, size=11) 
+        tk.Label(self, text=f"총 결제 금액: {total_price:,}원", font=font.Font(family=FONT_NAME, size=13, weight="bold"), bg=BG_COLOR).pack(pady=15)
+        
+        input_frame = tk.Frame(self, bg=BG_COLOR)
+        input_frame.pack(pady=5)
+        tk.Label(input_frame, text="지불할 금액:", font=default_font, bg=BG_COLOR).pack(side="left", padx=5)
+        self.amount_entry = tk.Entry(input_frame, font=default_font, width=12, justify="right")
+        self.amount_entry.pack(side="left")
+
+        pay_btn = tk.Button(self, text="결제하기", font=default_font, command=self.process_payment, bg=POINT_COLOR, fg="white", relief="flat", padx=10, pady=5)
+        pay_btn.pack(pady=15)
+        pay_btn.bind("<Enter>", on_enter)
+        pay_btn.bind("<Leave>", on_leave)
