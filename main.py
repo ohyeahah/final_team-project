@@ -166,3 +166,11 @@ class SeatSelectionWindow(tk.Toplevel):
             self.info_label.config(text=f"'{next_person}' 좌석을 선택해주세요. ({len(self.selected_seats)}/{self.total_seats_to_select})", fg=color)
         else:
             self.info_label.config(text=f"모든 좌석을 선택했습니다. ({len(self.selected_seats)}/{self.total_seats_to_select})", fg="black")
+    
+    def confirm_selection(self):
+        if self.selection_queue:
+            messagebox.showwarning("좌석 부족", f"{self.total_seats_to_select}개의 좌석을 모두 선택해주세요.", parent=self)
+            return
+        
+        self.result = sorted(self.selected_seats.keys())
+        self.destroy()
