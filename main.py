@@ -430,4 +430,13 @@ class MovieTicketApp:
         except IndexError:
             pass
 
+    def rate_movie(self, rating):
+        self.current_rating = rating
+        for i, btn in enumerate(self.star_buttons):
+            if i < rating:
+                btn.config(text='★')
+            else:
+                btn.config(text='☆')
+
+
 
